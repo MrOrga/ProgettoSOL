@@ -38,7 +38,7 @@ int os_connect(char *name)
     }
     //risposta server
     char server_response[MAX_LENGHT];
-    int err_read=readn(fd_skt,server_response,MAX_LENGHT);
+    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
     if(err_read>0)
         return check_answer(server_response,"Connection failed");
     else
@@ -63,6 +63,7 @@ int os_store(char *name, void *block, size_t len)
     //creazione e invio messaggio
     char* message=malloc((MAX_LENGHT+len+1)* sizeof(char));
     sprintf(message,"%s %s %ld \n %s","STORE",name,len,(char*)block);
+    //fprintf(stdout,"%s %s %ld \n %s\n","STORE",name,len,(char*)block);
     size_t len_msg=strlen(message);
     int err_writen=writen(fd_skt,message,len_msg);
     if(err_writen==-1)
@@ -72,7 +73,7 @@ int os_store(char *name, void *block, size_t len)
     }
     //risposta server
     char server_response[MAX_LENGHT];
-    int err_read=readn(fd_skt,server_response,MAX_LENGHT);
+    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
     free(message);
     if(err_read>0)
     	return check_answer(server_response,"Store failed");
@@ -90,7 +91,7 @@ void * os_retrieve(char *name)
     void * data=NULL;
     CHECKNULL(name,"invalid argument");
     char buff[BUFF_SIZE];
-    sprintf(buff,"%s \n","RETRIEVE");
+    sprintf(buff,"%s %s \n","RETRIEVE",name);
     int err_writen=writen(fd_skt,buff,strlen(buff));
     if(err_writen==-1)
     {
@@ -99,7 +100,7 @@ void * os_retrieve(char *name)
     }
     //risposta server
     char server_response[MAX_LENGHT];
-    int byte_read=readn(fd_skt,server_response,MAX_LENGHT);
+    int byte_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
     char* partial_data=NULL;
     char* check_ans=NULL;
     check_ans=strtok_r(server_response," ",&partial_data);
@@ -111,6 +112,7 @@ void * os_retrieve(char *name)
         //conversione
         long int len = strtol(len_c, &rest, 10);
         //separo dati da \n
+	//partial_data=strtok_r(partial_data,"\n",&partial_data);
         partial_data=strtok_r(partial_data," ",&partial_data);
         data=(char*)malloc((len+1)* sizeof(char));
         strcat(data,partial_data);
@@ -154,7 +156,7 @@ int os_delete(char *name)
     }
     //risposta server
     char server_response[MAX_LENGHT];
-    int err_read=readn(fd_skt,server_response,MAX_LENGHT);
+    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
     if(err_read<0)
     	return check_answer(server_response,"Store failed");
     else
@@ -177,7 +179,7 @@ int os_disconnect()
     }
     //risposta server
     char server_response[MAX_LENGHT];
-    int err_read=readn(fd_skt,server_response,MAX_LENGHT);
+    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
     close(fd_skt);
     fd_skt=-1;
     if(err_read<0)
