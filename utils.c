@@ -3,6 +3,7 @@
 #include "utils.h"
 int check_answer(char* answer,char * e)
 {
+	//fprintf(stdout,"\ncheck point %s\n",answer);
     if(strncmp(answer,"OK",2)==0)
         return 1;
     else

@@ -15,9 +15,9 @@ worker* create_worker(int fd)
     new_worker->is_logged=true;
     new_worker->is_registered=false;
     memset(new_worker->name,0,MAX_LENGHT);
-    if(pthread_create(&new_worker->tid,NULL,worker_loop,new_worker)==0)
+    if(pthread_create(&new_worker->tid,NULL,worker_loop,new_worker)!=0)
         fprintf(stderr,"ERROR : phtread_create failed" );
-    if(pthread_detach(new_worker->tid)==0)
+    if(pthread_detach(new_worker->tid)!=0)
         fprintf(stderr,"ERROR : phtread_detach failed" );
     //acquisizione mutex per lavorare sulla lista di worker
     pthread_mutex_lock(&mutex);

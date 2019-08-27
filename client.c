@@ -17,27 +17,29 @@
 #define INC_FILE_SIZE (999000/19) //costante per incremento lunghezza file
 char *data[N];
 int op_success=0,op_failed=0;
-#define string_test "Apelle figlio di Apollo\n" \
-"fece una palla di pelle di pollo;"
+#define string_test "pe9mlIcUkWoZU8JugWg8qSH4B5KSpehnuTmLoMvPzYaW7F5iRYvkKdr37tmmNxlcDperLHWo6Y9BFd3VxAfnbIXqlx8jvIPKKqqm"
+
 
 void init_data()
 {
     size_t len=strlen(string_test);
-    data[0]=malloc(len*sizeof(char));
-    for (int i = 1; i <N ; ++i)
+    data[0]=malloc(len*sizeof(char)+1);
+    sprintf(data[0],"%s",string_test);
+    for (int i = 1; i <N ; i++)
     {
-        size_t len_blocco_i= len*i*(INC_FILE_SIZE);
+        size_t len_blocco_i= len*i*(53);
         data[i]=malloc(len_blocco_i* sizeof(char)+1);
-        for (int j = 0; j < len_blocco_i/len; ++j)
+        memset(data[i], 0, len_blocco_i);
+        for (int j = 0; j < len_blocco_i/len; j++)
         {
-            strcat(data[j],string_test);
+            //strcat(data[i],string_test);
+            memcpy(data[i]+(j*strlen(string_test)),string_test,strlen(string_test));
         }
     }
 }
 void test1(char * name)
 {
     init_data();
-	fprintf(stdout,"\ncheck test1\n");
     for(int i=0;i<N;i++)
     {
         char file_name[MAX_NAME_LENGHT+1];
@@ -104,23 +106,29 @@ int main(int argc,char * argv[])
         }
         //
         int connect=os_connect(name);
-        if(connect!=0)
+        if(connect==0)
             exit(EXIT_FAILURE);
-        int long op=strtol(argv[0],NULL,10);
+        int long op=strtol(argv[2],NULL,10);
         //char op=*argv[2];
-        fprintf(stdout,"\ncheck point char%ld\n",op);
-        if(op==1)
-            test1(name);
-        if(op==2)
-            test2(name);
-        if(op==3)
-            test3(name);
-        else
-        {
-            fprintf(stderr,"THE TEST NUMBER IS WRONG,PLEASE CHECK AND TRY AGAIN");
-            exit(EXIT_FAILURE);
-        }
+	switch(op)
+	{
+	    case 1:
+		test1(name);
+		break;
 
+	    case 2:
+		test2(name);
+		break;
+
+	    case 3:
+		test3(name);
+		break;
+
+	    default:
+		fprintf(stderr,"THE TEST NUMBER IS WRONG,PLEASE CHECK AND TRY AGAIN\n");
+		exit(EXIT_FAILURE);
+
+	}
         int disconnect=os_connect(name);
         if(disconnect!=0)
             exit(EXIT_FAILURE);
