@@ -4,8 +4,8 @@ size_t send_KO(char* err,worker * current_worker)
 {
     char ko[MAX_LENGHT+1] ;
     sprintf(ko,"%s %s \n","KO",err);
-
-        return writen(current_worker->fd,ko,strlen(ko));
+    fprintf(stderr,"%s %s \n","KO",err);
+    return writen(current_worker->fd,ko,strlen(ko));
 }
 size_t send_OK(worker* current_worker)
 {
@@ -50,27 +50,28 @@ size_t handler_register(char *message ,worker *current_worker)
 {
     char* rest=NULL;
     char* name=strtok_r(message," " ,&rest);
+
     if(search_user(name)==true)
         return send_KO("REGISTER FAILED NAME ALREADY TAKEN",current_worker);
-    if(current_worker->is_logged==true)
+    if(current_worker->is_registered==true)
         return send_KO("REGISTER FAILED ALREADY LOGGED",current_worker);
     char path[UNIX_PATH_MAX];
     //set user name
     sprintf(current_worker->name,"%s",name);
     sprintf(path,"%s/%s",DATA,name);
     mkdir(path,MASK);
-    current_worker->is_logged=true;
+    current_worker->is_registered=true;
     return send_OK(current_worker);
 
 }
 size_t handler_store(char *message,size_t data_len,worker* current_worker)
 {
     void * data=NULL;
-    char buff[BUFF_SIZE+1];
+    //char buff[BUFF_SIZE+1];
     char* rest=NULL;
     char* partial_data=NULL;
     char* name=strtok_r(message," " ,&partial_data);
-
+    fprintf(stdout,"\ncheck point store\n");
     //separo lunghezza
     char *len_c=strtok_r(partial_data," ",&partial_data);
     //conversione
@@ -95,7 +96,7 @@ size_t handler_store(char *message,size_t data_len,worker* current_worker)
     ssize_t byte_written = 0;
     while(byte_written < len)
     {
-        size_t now = fwrite(data+byte_written, sizeof(char), len-byte_written, file);//aggiungere byte_readen??
+        size_t now = fwrite(&data+byte_written, sizeof(char), len-byte_written, file);//aggiungere byte_readen??
         byte_written += now;
     }
     fclose(file);

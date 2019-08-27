@@ -3,8 +3,6 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-
-#include <sys/types.h>
 #include "utils.h"
 
 typedef struct worker
@@ -13,12 +11,12 @@ typedef struct worker
     struct worker * next;
     struct worker * prev;
     pthread_t tid;
-    char * name;
+    char name[MAX_LENGHT+1];
     bool is_logged;
     bool is_registered;
 }worker;
 
-worker create_worker(int fd);
+worker* create_worker(int fd);
 void * worker_loop(void *args);
 bool search_user(char *name);
 void remove_worker(worker * current_worker);

@@ -20,7 +20,8 @@ int main()
     //pulizia socket precedente e apertura nuovo socket
     unlink(SOCKNAME);
     fd_skt = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (fd_skt == -1) {
+    if (fd_skt == -1)
+    {
         perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }

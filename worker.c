@@ -5,7 +5,7 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 worker * workers_list=NULL;
 
-worker create_worker(int fd)
+worker* create_worker(int fd)
 {
     //inizializzazione struttura worker
     worker * new_worker=(worker*)malloc(sizeof(worker));
@@ -14,7 +14,7 @@ worker create_worker(int fd)
     new_worker-> next=NULL;
     new_worker->is_logged=true;
     new_worker->is_registered=false;
-    new_worker->name=NULL;
+    memset(new_worker->name,0,MAX_LENGHT);
     if(pthread_create(&new_worker->tid,NULL,worker_loop,new_worker)==0)
         fprintf(stderr,"ERROR : phtread_create failed" );
     if(pthread_detach(new_worker->tid)==0)
@@ -23,12 +23,14 @@ worker create_worker(int fd)
     pthread_mutex_lock(&mutex);
     //inserimento lista
     new_worker->next = workers_list;
-    if(workers_list != NULL) {
+    if(workers_list != NULL)
+    {
         workers_list->prev = new_worker;
     }
     workers_list = new_worker;
 
     pthread_mutex_unlock(&mutex);
+    return new_worker;
 }
 void remove_worker(worker * current_worker)
 {
@@ -62,14 +64,14 @@ void * worker_loop(void *args)
         int byte_readen = read_to_new(current_worker->fd, message,BUFF_SIZE);
         if(byte_readen <= 0)
         {
-            printf(stdout, "Client %s with fd %d is quiting\n", current_worker->name, current_worker->fd);
+            fprintf(stdout, "Client %s with fd %d is quiting\n", current_worker->name, current_worker->fd);
             break;
         }
         else
         {
             handler_msg(message,byte_readen, current_worker);
         }
-        free(message);
+        //free(message);
     }
 
     close(current_worker->fd);//aggiungere controllo

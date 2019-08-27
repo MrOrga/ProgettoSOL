@@ -1,5 +1,5 @@
-#include "libobjstore.h"
 #include "utils.h"
+#include "libobjstore.h"
 static int fd_skt=-1;// socket per la connessione inizializzato a -1 per controllare se esiste fd prima di un op
 int os_connect(char *name)
 {
@@ -39,8 +39,14 @@ int os_connect(char *name)
     //risposta server
     char server_response[MAX_LENGHT];
     int err_read=readn(fd_skt,server_response,MAX_LENGHT);
+    if(err_read>0)
+        return check_answer(server_response,"Connection failed");
+    else
+    {
+    	perror("ERROR ON READ os_connect");
+    	return -1;
+    }
 
-    return check_answer(server_response,"Connection failed");
 
 
 }
@@ -56,7 +62,7 @@ int os_store(char *name, void *block, size_t len)
     }
     //creazione e invio messaggio
     char* message=malloc((MAX_LENGHT+len+1)* sizeof(char));
-    sprintf(message,"%s %s %ld \n %s","STORE",name,len,block);
+    sprintf(message,"%s %s %ld \n %s","STORE",name,len,(char*)block);
     size_t len_msg=strlen(message);
     int err_writen=writen(fd_skt,message,len_msg);
     if(err_writen==-1)
@@ -68,7 +74,14 @@ int os_store(char *name, void *block, size_t len)
     char server_response[MAX_LENGHT];
     int err_read=readn(fd_skt,server_response,MAX_LENGHT);
     free(message);
-    return check_answer(server_response,"Store failed");
+    if(err_read>0)
+    	return check_answer(server_response,"Store failed");
+    else
+    {
+	    perror("ERROR ON READ os_store");
+	    return -1;
+    }
+
 
 }
 
@@ -105,18 +118,20 @@ void * os_retrieve(char *name)
         size_t readlen=len-(byte_read-(strlen(check_ans)+strlen(len_c)+4));
         char* partial_data2=(char*)malloc((readlen+1)* sizeof(char));
         byte_read=readn(fd_skt,partial_data2,readlen);
-        strcat(data,partial_data2);
-
+        if(byte_read>0)
+        	strcat(data,partial_data2);
+        else
+	{
+		perror("ERROR READ os_RETRIEVE");
+		return NULL;
+	}
     }
     else
     {
         fprintf(stderr,"%s : %s\n","os_RETRIEVE",server_response);
         return NULL;
     }
-
-
-
-
+	return data;
 }
 
 int os_delete(char *name)
@@ -140,8 +155,13 @@ int os_delete(char *name)
     //risposta server
     char server_response[MAX_LENGHT];
     int err_read=readn(fd_skt,server_response,MAX_LENGHT);
-    free(message);
-    return check_answer(server_response,"Store failed");
+    if(err_read<0)
+    	return check_answer(server_response,"Store failed");
+    else
+    {
+    	perror("ERROR READ os_delete");
+    	return -1;
+    }
 
 }
 
@@ -160,5 +180,11 @@ int os_disconnect()
     int err_read=readn(fd_skt,server_response,MAX_LENGHT);
     close(fd_skt);
     fd_skt=-1;
-    return check_answer(server_response,"Disconnection failed");
+    if(err_read<0)
+    	return check_answer(server_response,"Disconnection failed");
+    else
+    {
+    	perror("ERROR READ os_delete");
+    	return -1;
+    }
 }

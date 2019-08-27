@@ -7,6 +7,7 @@
 
 typedef struct server_
 {
+    int fd;
     ssize_t clients_connected;
     bool is_running;
     size_t size;

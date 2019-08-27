@@ -2,6 +2,7 @@
 #ifndef LIBOBJSTORE_H
 #define LIBOBJSTORE_H
 
+
 int os_connect(char *name);
 
 int os_store(char *name, void *block, size_t len);
