@@ -27,9 +27,9 @@ void init_data()
     sprintf(data[0],"%s",string_test);
     for (int i = 1; i <N ; i++)
     {
-        size_t len_blocco_i= len*i*(53);
+        size_t len_blocco_i= len*i*(52.65);
         data[i]=malloc(len_blocco_i* sizeof(char)+1);
-        memset(data[i], 0, len_blocco_i);
+        memset(data[i], 0, len_blocco_i+1);
         for (int j = 0; j < len_blocco_i/len; j++)
         {
             //strcat(data[i],string_test);
@@ -67,10 +67,18 @@ void test2(char *name)
         char * file=NULL;
         if((file=os_retrieve(file_name))!=NULL)
         {
+	    file[strlen(data[i])] = '\0';
             if(strcmp(data[i],file)==0)
+
+	    {
+                //fprintf(stdout,"FILE %d RETRIEVED SUCCESS",i);
                 op_success++;
+	    }
             else
+	    {
+		//fprintf(stdout,"FILE %d RETRIEVED FAILED",i);
                 op_failed++;
+	    }
         }
         free(file);
     }
@@ -129,7 +137,8 @@ int main(int argc,char * argv[])
 		exit(EXIT_FAILURE);
 
 	}
-        int disconnect=os_connect(name);
+	fprintf(stdout,"\n-----OPERAZIONE EFFETTUATE CON SUCCESSO: %d,OPERAZIONE FALLITE:%d-----\n",op_success,op_failed);
+        int disconnect=os_disconnect(name);
         if(disconnect!=0)
             exit(EXIT_FAILURE);
         exit(EXIT_SUCCESS);

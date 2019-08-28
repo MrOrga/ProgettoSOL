@@ -37,8 +37,8 @@ int os_connect(char *name)
         exit(EXIT_FAILURE);
     }
     //risposta server
-    char server_response[MAX_LENGHT];
-    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
+    char server_response[BUFF_SIZE];
+    int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     if(err_read>0)
         return check_answer(server_response,"Connection failed");
     else
@@ -61,7 +61,7 @@ int os_store(char *name, void *block, size_t len)
         exit(EXIT_FAILURE);
     }
     //creazione e invio messaggio
-    char* message=malloc((MAX_LENGHT+len+1)* sizeof(char));
+    char* message=malloc((BUFF_SIZE+len+1)* sizeof(char));
     sprintf(message,"%s %s %ld \n %s","STORE",name,len,(char*)block);
     //fprintf(stdout,"%s %s %ld \n %s\n","STORE",name,len,(char*)block);
     size_t len_msg=strlen(message);
@@ -72,11 +72,13 @@ int os_store(char *name, void *block, size_t len)
         exit(EXIT_FAILURE);
     }
     //risposta server
-    char server_response[MAX_LENGHT];
-    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
+    char server_response[BUFF_SIZE];
+    int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     free(message);
     if(err_read>0)
-    	return check_answer(server_response,"Store failed");
+    {
+	return check_answer(server_response,"Store failed");
+    }
     else
     {
 	    perror("ERROR ON READ os_store");
@@ -88,7 +90,7 @@ int os_store(char *name, void *block, size_t len)
 
 void * os_retrieve(char *name)
 {
-    void * data=NULL;
+    char * data=NULL;
     CHECKNULL(name,"invalid argument");
     char buff[BUFF_SIZE];
     sprintf(buff,"%s %s \n","RETRIEVE",name);
@@ -99,8 +101,10 @@ void * os_retrieve(char *name)
         exit(EXIT_FAILURE);
     }
     //risposta server
-    char server_response[MAX_LENGHT];
-    int byte_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
+    char server_response[BUFF_SIZE+1];
+    //memset(server_response,0,BUFF_SIZE+1);
+    int byte_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
+    //fprintf(stdout,"\n byte letti:%d\n",byte_read);
     char* partial_data=NULL;
     char* check_ans=NULL;
     check_ans=strtok_r(server_response," ",&partial_data);
@@ -112,20 +116,26 @@ void * os_retrieve(char *name)
         //conversione
         long int len = strtol(len_c, &rest, 10);
         //separo dati da \n
-	//partial_data=strtok_r(partial_data,"\n",&partial_data);
+	partial_data=strtok_r(partial_data,"\n",&partial_data);
         partial_data=strtok_r(partial_data," ",&partial_data);
-        data=(char*)malloc((len+1)* sizeof(char));
-        strcat(data,partial_data);
-        //lunghezza dei dati da leggere +4 perchè 3 spazi e /n
-        size_t readlen=len-(byte_read-(strlen(check_ans)+strlen(len_c)+4));
-        char* partial_data2=(char*)malloc((readlen+1)* sizeof(char));
-        byte_read=readn(fd_skt,partial_data2,readlen);
-        if(byte_read>0)
-        	strcat(data,partial_data2);
-        else
+        //fprintf(stdout,"\nlen=%ld data part1=%s\n",len,partial_data);
+
+        //strcat(data,partial_data);
+	//lunghezza dei dati da leggere +4 perchè 3 spazi e /n
+
+	ssize_t partial_size=(byte_read-(strlen("DATA")+strlen(len_c)+4));
+	ssize_t readlen=len-partial_size;
+	data=(char*)malloc((len+1)* sizeof(char));
+        memcpy(data,partial_data,sizeof(char)*partial_size);
+	//fprintf(stdout,"\nlen=%ld len data part=%ld\n",len,partial_size);
+        //sprintf(data,"%s",partial_data);
+	if(readlen>0)
 	{
-		perror("ERROR READ os_RETRIEVE");
-		return NULL;
+	    char* partial_data2=(char*)malloc((readlen+1)* sizeof(char));
+	    byte_read=readn(fd_skt,partial_data2,readlen);
+	    //strcat(data,partial_data2);
+	    memcpy((data+(sizeof(char)*partial_size)),partial_data2, sizeof(char)*readlen);
+	    free(partial_data2);
 	}
     }
     else
@@ -155,10 +165,10 @@ int os_delete(char *name)
         exit(EXIT_FAILURE);
     }
     //risposta server
-    char server_response[MAX_LENGHT];
-    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
-    if(err_read<0)
-    	return check_answer(server_response,"Store failed");
+    char server_response[BUFF_SIZE];
+    int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
+    if(err_read>0)
+    	return check_answer(server_response,"Delete failed");
     else
     {
     	perror("ERROR READ os_delete");
@@ -178,15 +188,15 @@ int os_disconnect()
         exit(EXIT_FAILURE);
     }
     //risposta server
-    char server_response[MAX_LENGHT];
-    int err_read=read_to_new(fd_skt,server_response,MAX_LENGHT);
+    char server_response[BUFF_SIZE];
+    int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     close(fd_skt);
     fd_skt=-1;
-    if(err_read<0)
+    if(err_read>0)
     	return check_answer(server_response,"Disconnection failed");
     else
     {
-    	perror("ERROR READ os_delete");
+    	perror("ERROR READ os_disconnect");
     	return -1;
     }
 }

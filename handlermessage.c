@@ -83,9 +83,9 @@ size_t handler_store(char *message,size_t data_len,worker* current_worker)
     data=(char*)malloc((len+1)* sizeof(char));
     //memset(data,0,len);
     //lunghezza dei dati da leggere +5 perchè 4 spazi e /n
-    size_t partial_size=(data_len-(strlen("STORE")+strlen(name)+strlen(len_c)+5)-1);
+    ssize_t partial_size=(data_len-(strlen("STORE")+strlen(name)+strlen(len_c)+5));
     ssize_t readlen=len-(partial_size);
-    memcpy(data,partial_data, sizeof(char)*partial_size+1);
+    memcpy(data,partial_data, sizeof(char)*partial_size);
     //strcat(data,partial_data);
     //fprintf(stdout,"\n lenfile =%ld len1 =%ld len2=%ld\n",len,partial_size,readlen);
     if(readlen>0)
@@ -131,47 +131,54 @@ size_t handler_retrieve(char *message,worker* current_worker)
     size_t byte_readen=0;
     size_t len=1;//dichiaro len a 1 perchè dopo vado a controllare byte_readen <len
     FILE* file = fopen(path, "r");
-    char *data=NULL;
+    //char *data=NULL;
     if (file != NULL)
     {
 	struct stat info;
 	if(stat(path, &info) != 0)
 	    perror("stat in read_from_disk failed");
 	len = info.st_size;
-	data= (char*) malloc(len* sizeof(char));
+	char data[len+1];
+	memset(data,0,len+1);
 
 	while(byte_readen < len)
 	{
+	    //fprintf(stdout, "byte_readen%ld len =%ld\n", byte_readen, len);
 	    size_t now = fread(data + byte_readen, sizeof(char), len - byte_readen, file);
+	    //fprintf(stdout, "byte_readen_now%ld len =%ld\n", now, len);
+	    //fprintf(stdout, "I DATI SONO:%s\n", data);
 	    byte_readen += now;
 	}
-	fclose(file);
+	    if(byte_readen<len)
+		return send_KO("ERROR STORE worker",current_worker);
+	    else
+	    {
+		fclose(file);
+		//char header[BUFF_SIZE+1];
+		char* message_full=(char*)malloc((BUFF_SIZE+len+1 )* sizeof(char));
+		sprintf(message_full,"DATA %lld \n %s",(long long)len,data);
+		//fprintf(stdout, "IL MESSAGGIO COMPLETO :%s\n", message_full);
+		//strcat(message_full,header);//non funzionanti
+		//strcat(message_full,data);//non funzionanti
+		size_t byte_writen=writen(current_worker->fd,message_full,strlen(message_full));
+		//fprintf(stdout,"\ndimensione byte scritti%ld\n",byte_writen);
+		if(byte_writen<0)
+		{
+		    //free(data);
+		    free(message);
+		    perror("Failed write retrieve worker");
+		    return byte_writen;
+		}
+		free(message_full);
+		return byte_writen;
+		}
 
     }
-    else
-	perror("Failed opening file");
-    if(byte_readen<len)
-	return send_KO("ERROR STORE worker",current_worker);
     else
     {
-	char header[BUFF_SIZE+1];
-	sprintf(header,"DATA %lld \n ",(long long)len);
-	char* message_full=(char*)malloc((strlen(header)+len+1 )* sizeof(char));
-	strcat(message_full,header);//non funzionanti
-	strcat(message_full,data);//non funzionanti
-	size_t byte_writen=writen(current_worker->fd,message,strlen(message));
-	if(byte_writen<0)
-	{
-	    free(data);
-	    free(message);
-	    perror("Failed write retrieve worker");
-	    return byte_writen;
-	}
-	return byte_writen;
+        perror("Failed opening file");
+	return -1;
     }
-
-
-
 }
 size_t handler_delete(char *message,worker* current_worker)
 {

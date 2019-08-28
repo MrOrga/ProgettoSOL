@@ -87,5 +87,5 @@ ssize_t read_to_new(int fd ,void*buff,size_t len)
         byte_total+=byte_readen;
         byte_left-=byte_readen;
     }
-    return strlen(buff)+1;
+    return byte_total;
 }
