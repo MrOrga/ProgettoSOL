@@ -7,34 +7,35 @@ worker * workers_list=NULL;
 
 worker* create_worker(int fd)
 {
+    //acquisizione mutex per lavorare sulla lista di worker
+    pthread_mutex_lock(&mutex);
     //inizializzazione struttura worker
     worker * new_worker=(worker*)malloc(sizeof(worker));
     new_worker->fd=fd;
-    new_worker-> prev=NULL;
-    new_worker-> next=NULL;
+    new_worker->prev=NULL;
+    new_worker->next=NULL;
     new_worker->is_logged=true;
     new_worker->is_registered=false;
     memset(new_worker->name,0,MAX_LENGHT);
-    if(pthread_create(&new_worker->tid,NULL,worker_loop,new_worker)!=0)
-        fprintf(stderr,"ERROR : phtread_create failed" );
-    if(pthread_detach(new_worker->tid)!=0)
-        fprintf(stderr,"ERROR : phtread_detach failed" );
-    //acquisizione mutex per lavorare sulla lista di worker
-    pthread_mutex_lock(&mutex);
-    //inserimento lista
     new_worker->next = workers_list;
+    //inserimento lista
     if(workers_list != NULL)
     {
-        workers_list->prev = new_worker;
+	workers_list->prev = new_worker;
     }
     workers_list = new_worker;
 
     pthread_mutex_unlock(&mutex);
+    if(pthread_create(&new_worker->tid,NULL,worker_loop,new_worker)!=0)
+        fprintf(stderr,"ERROR : phtread_create failed" );
+    if(pthread_detach(new_worker->tid)!=0)
+        fprintf(stderr,"ERROR : phtread_detach failed" );
+
     return new_worker;
 }
 void remove_worker(worker * current_worker)
 {
-    pthread_mutex_lock(&mutex);
+/*    pthread_mutex_lock(&mutex);
     server->clients_connected--;
 
     if(current_worker->next != NULL)
@@ -53,7 +54,28 @@ void remove_worker(worker * current_worker)
     }
 
     pthread_mutex_unlock(&mutex);
+    free(current_worker);*/
+    pthread_mutex_lock(&mutex);
+
+    current_worker->is_logged=false;
+    server->clients_connected--;
+
+    if(current_worker->prev== NULL)
+    {
+	if (current_worker->next != NULL)
+	    current_worker->next->prev=NULL;
+	workers_list = current_worker->next;
+    }
+    else
+    {
+	if (current_worker->next != NULL)
+	    current_worker->next->prev=current_worker->prev;
+	current_worker->prev->next=current_worker->next;
+
+    }
+    pthread_mutex_unlock(&mutex);
     free(current_worker);
+
 }
 void * worker_loop(void *args)
 {
