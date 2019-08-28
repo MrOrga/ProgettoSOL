@@ -76,7 +76,7 @@ void * worker_loop(void *args)
 
     close(current_worker->fd);//aggiungere controllo
     remove_worker(current_worker);
-    free(current_worker);
+    //free(current_worker);
     pthread_exit(NULL);
 }
 bool search_user(char *name)
