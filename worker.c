@@ -39,18 +39,19 @@ void remove_worker(worker * current_worker)
 
     if(current_worker->next != NULL)
     {
-        current_worker->next->prev = current_worker->prev;
+	if(workers_list == current_worker)
+	{
+	    workers_list = current_worker->next;
+	}
+	else
+        	current_worker->next->prev = current_worker->prev;
     }
 
     if(current_worker->prev != NULL)
     {
-        current_worker->prev->next = current_worker->next;
+	    current_worker->prev->next = current_worker->next;
     }
 
-    if(workers_list == current_worker)
-    {
-        workers_list = current_worker->next;
-    }
     pthread_mutex_unlock(&mutex);
     free(current_worker);
 }
