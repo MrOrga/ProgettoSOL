@@ -5,7 +5,7 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 worker * workers_list=NULL;
 
-worker* create_worker(int fd)
+void create_worker(int fd)
 {
     //acquisizione mutex per lavorare sulla lista di worker
     pthread_mutex_lock(&mutex);
@@ -17,13 +17,17 @@ worker* create_worker(int fd)
     new_worker->is_logged=true;
     new_worker->is_registered=false;
     memset(new_worker->name,0,MAX_LENGHT);
-    new_worker->next = workers_list;
     //inserimento lista
-    if(workers_list != NULL)
+    if(workers_list == NULL)
     {
-	workers_list->prev = new_worker;
+	workers_list = new_worker;
     }
-    workers_list = new_worker;
+    else
+	{
+	workers_list->prev = new_worker;
+	new_worker->next = workers_list;
+	workers_list=new_worker;	
+	}
 
     pthread_mutex_unlock(&mutex);
     if(pthread_create(&new_worker->tid,NULL,worker_loop,new_worker)!=0)
@@ -31,7 +35,7 @@ worker* create_worker(int fd)
     if(pthread_detach(new_worker->tid)!=0)
         fprintf(stderr,"ERROR : phtread_detach failed" );
 
-    return new_worker;
+    //return new_worker;
 }
 void remove_worker(worker * current_worker)
 {
@@ -74,7 +78,6 @@ void remove_worker(worker * current_worker)
 
     }
     pthread_mutex_unlock(&mutex);
-    free(current_worker);
 
 }
 void * worker_loop(void *args)
@@ -94,12 +97,11 @@ void * worker_loop(void *args)
         {
             handler_msg(message,byte_readen, current_worker);
         }
-        //free(message);
     }
 
     close(current_worker->fd);//aggiungere controllo
     remove_worker(current_worker);
-    //free(current_worker);
+    free(current_worker);
     pthread_exit(NULL);
 }
 bool search_user(char *name)

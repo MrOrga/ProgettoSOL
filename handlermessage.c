@@ -1,5 +1,6 @@
 
 #include "handlermessage.h"
+
 size_t send_KO(char* err,worker * current_worker)
 {
     char ko[MAX_LENGHT+1] ;
@@ -128,8 +129,8 @@ size_t handler_retrieve(char *message,worker* current_worker)
     char* name=strtok_r(message," " ,&partial_data);
     char path[UNIX_PATH_MAX];
     sprintf(path, "%s/%s/%s", DATA, current_worker->name,name);
-    size_t byte_readen=0;
-    size_t len=1;//dichiaro len a 1 perchè dopo vado a controllare byte_readen <len
+    off_t byte_readen=0;
+    off_t len=1;//dichiaro len a 1 perchè dopo vado a controllare byte_readen <len
     FILE* file = fopen(path, "r");
     //char *data=NULL;
     if (file != NULL)
@@ -138,6 +139,7 @@ size_t handler_retrieve(char *message,worker* current_worker)
 	if(stat(path, &info) != 0)
 	    perror("stat in read_from_disk failed");
 	len = info.st_size;
+	fprintf(stdout,"len file=%ld \n",len);
 	char data[len+1];
 	memset(data,0,len+1);
 
@@ -153,14 +155,18 @@ size_t handler_retrieve(char *message,worker* current_worker)
 		return send_KO("ERROR STORE worker",current_worker);
 	    else
 	    {
+		fprintf(stdout,"byte letti=%ld \n",byte_readen);
 		fclose(file);
-		//char header[BUFF_SIZE+1];
-		char* message_full=(char*)malloc((BUFF_SIZE+len+1 )* sizeof(char));
-		sprintf(message_full,"DATA %lld \n %s",(long long)len,data);
+		char header[BUFF_SIZE+1];
+		memset(header,0,BUFF_SIZE+1);
+		sprintf(header,"DATA %ld \n ",len);
+		char* message_full=(char*)malloc((strlen(header)+len+1)* sizeof(char));
+		memcpy(message_full,header,strlen(header));
+		memcpy(message_full+(strlen(header)),data,len);
 		//fprintf(stdout, "IL MESSAGGIO COMPLETO :%s\n", message_full);
 		//strcat(message_full,header);//non funzionanti
 		//strcat(message_full,data);//non funzionanti
-		size_t byte_writen=writen(current_worker->fd,message_full,strlen(message_full));
+		size_t byte_writen=writen(current_worker->fd,message_full,strlen(header)+len);
 		//fprintf(stdout,"\ndimensione byte scritti%ld\n",byte_writen);
 		if(byte_writen<0)
 		{
@@ -194,7 +200,7 @@ size_t handler_delete(char *message,worker* current_worker)
 }
 size_t handler_leave(worker* current_worker)
 {
-   current_worker->is_logged=false;
-    return send_OK(current_worker);
+	current_worker->is_logged=false;
+	return send_OK(current_worker);
 
 }

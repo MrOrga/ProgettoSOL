@@ -71,12 +71,14 @@ void test2(char *name)
             if(strcmp(data[i],file)==0)
 
 	    {
-                //fprintf(stdout,"FILE %d RETRIEVED SUCCESS",i);
+                fprintf(stdout,"FILE %d RETRIEVED SUCCESS\n",i);
                 op_success++;
 	    }
             else
 	    {
-		//fprintf(stdout,"FILE %d RETRIEVED FAILED",i);
+		fprintf(stdout,"FILE %d RETRIEVED FAILED\n",i);
+                fprintf(stdout,"DATI RICEVUTI:\n%s\n",file );
+		fprintf(stdout,"DATI INIZIALI:\n%s\n",data[i] );
                 op_failed++;
 	    }
         }
@@ -137,7 +139,7 @@ int main(int argc,char * argv[])
 		exit(EXIT_FAILURE);
 
 	}
-	fprintf(stdout,"\n-----OPERAZIONE EFFETTUATE CON SUCCESSO: %d,OPERAZIONE FALLITE:%d-----\n",op_success,op_failed);
+	fprintf(stdout,"-----OPERAZIONE EFFETTUATE CON SUCCESSO: %d,OPERAZIONE FALLITE:%d-----\n",op_success,op_failed);
         int disconnect=os_disconnect(name);
         if(disconnect!=0)
             exit(EXIT_FAILURE);

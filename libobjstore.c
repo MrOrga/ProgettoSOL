@@ -29,6 +29,7 @@ int os_connect(char *name)
     }
     //creazione buffer ed invio richiesta al server
     char buff[BUFF_SIZE];
+    memset(buff,0,BUFF_SIZE);
     sprintf(buff,"%s %s \n","REGISTER",name);
     int err_writen=writen(fd_skt,buff,strlen(buff));
     if(err_writen==-1)
@@ -38,6 +39,7 @@ int os_connect(char *name)
     }
     //risposta server
     char server_response[BUFF_SIZE];
+    memset(server_response,0,BUFF_SIZE);
     int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     if(err_read>0)
         return check_answer(server_response,"Connection failed");
@@ -73,6 +75,7 @@ int os_store(char *name, void *block, size_t len)
     }
     //risposta server
     char server_response[BUFF_SIZE];
+    memset(server_response,0,BUFF_SIZE);
     int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     free(message);
     if(err_read>0)
@@ -93,6 +96,7 @@ void * os_retrieve(char *name)
     char * data=NULL;
     CHECKNULL(name,"invalid argument");
     char buff[BUFF_SIZE];
+    memset(buff,0,BUFF_SIZE);
     sprintf(buff,"%s %s \n","RETRIEVE",name);
     int err_writen=writen(fd_skt,buff,strlen(buff));
     if(err_writen==-1)
@@ -102,6 +106,7 @@ void * os_retrieve(char *name)
     }
     //risposta server
     char server_response[BUFF_SIZE+1];
+    memset(server_response,0,BUFF_SIZE+1);
     //memset(server_response,0,BUFF_SIZE+1);
     int byte_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     //fprintf(stdout,"\n byte letti:%d\n",byte_read);
@@ -157,6 +162,7 @@ int os_delete(char *name)
     }
     //creazione e invio messaggio
     char message[BUFF_SIZE];
+    memset(message,0,BUFF_SIZE);
     sprintf(message, "%s %s \n", "DELETE", name);
     int err_writen=writen(fd_skt,message,strlen(message));
     if(err_writen==-1)
@@ -166,6 +172,7 @@ int os_delete(char *name)
     }
     //risposta server
     char server_response[BUFF_SIZE];
+    memset(server_response,0,BUFF_SIZE);
     int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     if(err_read>0)
     	return check_answer(server_response,"Delete failed");
@@ -180,6 +187,7 @@ int os_delete(char *name)
 int os_disconnect()
 {
     char buff[BUFF_SIZE];
+    memset(buff,0,BUFF_SIZE);
     sprintf(buff,"%s \n","LEAVE");
     int err_writen=writen(fd_skt,buff,strlen(buff));
     if(err_writen==-1)
@@ -189,6 +197,7 @@ int os_disconnect()
     }
     //risposta server
     char server_response[BUFF_SIZE];
+    memset(server_response,0,BUFF_SIZE);
     int err_read=read_to_new(fd_skt,server_response,BUFF_SIZE);
     close(fd_skt);
     fd_skt=-1;
