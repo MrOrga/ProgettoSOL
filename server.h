@@ -10,10 +10,12 @@
 typedef struct server_
 {
     int fd;
-    ssize_t clients_connected;
-    bool is_running;
-    size_t size;
+    volatile sig_atomic_t clients_connected;
+    volatile sig_atomic_t is_running;
+    long double size;
+    int n_obj;
 
 }server_;
 server_ * server;
+void server_info();
 #endif //SERVER_H

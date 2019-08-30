@@ -63,7 +63,7 @@ void remove_worker(worker * current_worker)
     pthread_mutex_lock(&mutex);
 
     current_worker->is_logged=false;
-    server->clients_connected--;
+    //server->clients_connected--;
 
     if(current_worker->prev== NULL)
     {

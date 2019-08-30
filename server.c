@@ -1,6 +1,33 @@
-
+#define _XOPEN_SOURCE 700
 #include "server.h"
+int update_info(const char *path, const struct stat *info,const int flag)
+{
+    off_t bytes =  info->st_size;
+    if (flag == FTW_F)
+    {
+	server->n_obj++;
+	server->size+=bytes/1024;
+    }
+    return 0;
+}
+void server_info()
+{
 
+
+    server->size=0;
+    server->n_obj=0;
+
+    //nftw(DATA, update_info, 20, FTW_PHYS);
+    ftw(DATA,update_info,20);
+
+    fprintf (stdout,"-----------------------Object store info------------------\n");
+    fprintf (stdout,"-----------------------------------------------------------\n");
+    fprintf (stdout,"-----Client connected: %d---------------------------------\n",server->clients_connected);
+    fprintf (stdout,"-----Number of object present in the store: %d------------\n",server->n_obj);
+    fprintf (stdout,"-----Size store: %Lf MB-----------------------------------\n",server->size/1024);
+    fprintf (stdout,"-----------------------------------------------------------\n");
+
+}
 int main()
 {
     server = (server_ *) malloc(sizeof(server_));

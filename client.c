@@ -71,14 +71,14 @@ void test2(char *name)
             if(strcmp(data[i],file)==0)
 
 	    {
-                fprintf(stdout,"FILE %d RETRIEVED SUCCESS\n",i);
+                //fprintf(stdout,"FILE %d RETRIEVED SUCCESS\n",i);
                 op_success++;
 	    }
             else
 	    {
-		fprintf(stdout,"FILE %d RETRIEVED FAILED\n",i);
-                fprintf(stdout,"DATI RICEVUTI:\n%s\n",file );
-		fprintf(stdout,"DATI INIZIALI:\n%s\n",data[i] );
+		//fprintf(stdout,"FILE %d RETRIEVED FAILED\n",i);
+                //fprintf(stdout,"DATI RICEVUTI:\n%s\n",file );
+		//fprintf(stdout,"DATI INIZIALI:\n%s\n",data[i] );
                 op_failed++;
 	    }
         }

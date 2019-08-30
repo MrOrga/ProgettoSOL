@@ -13,7 +13,7 @@ int check_answer(char* answer,char * e)
     }
 
 }
-/*
+/*f
 ssize_t writen(int fd ,void *buff,size_t len)
 {
     size_t byte_left=len;
@@ -91,3 +91,4 @@ ssize_t read_to_new(int fd ,void*buff,size_t len)
     }
     return byte_total;
 }
+

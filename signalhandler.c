@@ -15,25 +15,29 @@ void * signal_loop()
 {
     sigset_t set;
     sigemptyset(&set);
-    while (server->is_running) {
+    sigaddset(&set, SIGINT);
+    sigaddset(&set, SIGTERM);
+    sigaddset(&set, SIGUSR1);
+    while (server->is_running)
+    {
 	sigprocmask(SIG_BLOCK, &set, NULL);
 	int sig;
 	sigwait(&set, &sig);
 	switch(sig) {
 	    case SIGINT:
-	        fprintf(stdout,"SIGINT RICEVUTA");
+	        fprintf(stdout,"SIGINT RECEIVED\n");
 		server->is_running = false;
 		//close(server->fd);
 		break;
 	    case SIGTERM:
-		fprintf(stdout,"SIGTERM RICEVUTA");
+		fprintf(stdout,"SIGTERM RECEIVED\n");
 		fprintf(stdout,"Server shutdown\n");
 		server->is_running = false;
 		//close(server->fd);
 		break;
 	    case SIGUSR1:
-		fprintf(stdout,"SIGUSR1 RICEVUTA");
-		//server_info();da aggiungere
+		fprintf(stdout,"SIGUSR1 RECEIVED\n");
+		server_info();
 		//sigaddset(&set, SIGINT);
 		//sigaddset(&set, SIGTERM);
 		//sigaddset(&set, SIGUSR1);

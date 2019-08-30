@@ -20,6 +20,6 @@ void create_worker(int fd);
 void * worker_loop(void *args);
 bool search_user(char *name);
 void remove_worker(worker * current_worker);
-void stop_worker(worker * current_worker);
+//void stop_worker(worker * current_worker);
 
 #endif //WORKER_H
