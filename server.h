@@ -4,6 +4,8 @@
 #define SERVER_H
 
 #include "utils.h"
+#include "worker.h"
+#include "signalhandler.h"
 
 typedef struct server_
 {

@@ -10,7 +10,7 @@ typedef struct worker
     int fd;
     struct worker * next;
     struct worker * prev;
-    pthread_t tid;
+    //pthread_t tid;
     char name[MAX_LENGHT+1];
     bool is_logged;
     bool is_registered;

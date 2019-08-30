@@ -30,9 +30,10 @@ void create_worker(int fd)
 	}
 
     pthread_mutex_unlock(&mutex);
-    if(pthread_create(&new_worker->tid,NULL,worker_loop,new_worker)!=0)
+    pthread_t tid;
+    if(pthread_create(&tid,NULL,worker_loop,new_worker)!=0)
         fprintf(stderr,"ERROR : phtread_create failed" );
-    if(pthread_detach(new_worker->tid)!=0)
+    if(pthread_detach(tid)!=0)
         fprintf(stderr,"ERROR : phtread_detach failed" );
 
     //return new_worker;
@@ -84,19 +85,26 @@ void * worker_loop(void *args)
 {
     worker* current_worker=(worker*) args;
     char message[BUFF_SIZE+1];
+    memset (message,0,BUFF_SIZE+1);
     while(server->is_running && current_worker->is_logged)
     {
-        memset (message,0,sizeof(message));
-        int byte_readen = read_to_new(current_worker->fd, message,BUFF_SIZE);
-        if(byte_readen <= 0)
-        {
-            fprintf(stdout, "Client %s with fd %d is quiting\n", current_worker->name, current_worker->fd);
-            break;
-        }
-        else
-        {
-            handler_msg(message,byte_readen, current_worker);
-        }
+
+	struct pollfd fds;
+	fds.fd=current_worker->fd;
+	fds.events=POLLIN;
+	if(poll(&fds, 1, 10) >= 1)
+	{
+	    int byte_readen = read_to_new(current_worker->fd, message, BUFF_SIZE);
+	    if (byte_readen <= 0)
+	    {
+		fprintf(stdout, "Client %s with fd %d is quiting\n", current_worker->name, current_worker->fd);
+		break;
+	    }
+	    else
+	    {
+	        handler_msg(message, byte_readen, current_worker);
+	    }
+	}
     }
 
     close(current_worker->fd);//aggiungere controllo

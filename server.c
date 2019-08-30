@@ -1,8 +1,5 @@
 
-#include "utils.h"
 #include "server.h"
-#include "worker.h"
-
 
 int main()
 {
@@ -38,23 +35,30 @@ int main()
         exit(EXIT_FAILURE);
     }
 
+    struct pollfd fds;
+    fds.fd=fd_skt;
+    fds.events=POLLIN;
     server->is_running=true;
+    server->fd=fd_skt;
+    create_signal_handler();
     while (server->is_running)
     {
         /*
          * ricezione e creazione thread per client
          */
-        int client_fd = accept(fd_skt, (struct sockaddr *) NULL, NULL);
-        if (client_fd > 0)
-        {
-                create_worker(client_fd);//creazione_worker
-        }
-        if (client_fd == -1) {
-            perror("Accept failed");
-            exit(EXIT_FAILURE);
-        }
+	if(poll(&fds, 1, 10) >= 1)
+	{
 
+	    int client_fd = accept(fd_skt, (struct sockaddr *) NULL, NULL);
+	    if (client_fd > 0) {
+		create_worker(client_fd);//creazione_worker
+	    }
+	    if (client_fd == -1) {
+		perror("Accept failed");
+		exit(EXIT_FAILURE);
+	    }
 
+	}
     }
     close(fd_skt);
 

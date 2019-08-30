@@ -1,4 +1,5 @@
 
+#include <fcntl.h>
 #include "handlermessage.h"
 
 size_t send_KO(char* err,worker * current_worker)
@@ -42,10 +43,9 @@ size_t handler_msg(char* message,size_t len, worker* current_worker)
     {
         return handler_leave(current_worker);
     }
-    else
-    {
-        CHECKNULL(NULL,"COMMAND NOT FOUND,CHECK IT AND TRY AGAIN" )
-    }
+
+    fprintf(stderr,"COMMAND NOT FOUND,CHECK IT AND TRY AGAIN" );
+    return -1;
 }
 size_t handler_register(char *message ,worker *current_worker)
 {
@@ -139,9 +139,9 @@ size_t handler_retrieve(char *message,worker* current_worker)
 	if(stat(path, &info) != 0)
 	    perror("stat in read_from_disk failed");
 	len = info.st_size;
-	fprintf(stdout,"len file=%ld \n",len);
+	//fprintf(stdout,"len file=%ld \n",len);
 	char data[len+1];
-	memset(data,0,len+1);
+	memset(data,0,len);
 
 	while(byte_readen < len)
 	{
@@ -155,18 +155,23 @@ size_t handler_retrieve(char *message,worker* current_worker)
 		return send_KO("ERROR STORE worker",current_worker);
 	    else
 	    {
-		fprintf(stdout,"byte letti=%ld \n",byte_readen);
+	        if(len!=byte_readen)
+	            printf("ERRORE LUNGHEZZE");
+		//fprintf(stdout,"byte letti=%ld \n",byte_readen);
 		fclose(file);
 		char header[BUFF_SIZE+1];
-		memset(header,0,BUFF_SIZE+1);
+		//memset(header,0,BUFF_SIZE+1);
 		sprintf(header,"DATA %ld \n ",len);
 		char* message_full=(char*)malloc((strlen(header)+len+1)* sizeof(char));
-		memcpy(message_full,header,strlen(header));
-		memcpy(message_full+(strlen(header)),data,len);
+		memcpy(message_full,header,strlen(header)* sizeof(char));
+		memcpy(message_full+(strlen(header)* sizeof(char)),data,len* sizeof(char));
+		message_full[strlen(header)+len]='\0';
 		//fprintf(stdout, "IL MESSAGGIO COMPLETO :%s\n", message_full);
 		//strcat(message_full,header);//non funzionanti
 		//strcat(message_full,data);//non funzionanti
 		size_t byte_writen=writen(current_worker->fd,message_full,strlen(header)+len);
+		if(strlen(header)+len!=strlen(message_full))
+		    fprintf(stdout,"ERRORE LUNGHEZZE2\n");
 		//fprintf(stdout,"\ndimensione byte scritti%ld\n",byte_writen);
 		if(byte_writen<0)
 		{
@@ -186,6 +191,63 @@ size_t handler_retrieve(char *message,worker* current_worker)
 	return -1;
     }
 }
+/*size_t handler_retrieve(char *message,worker* current_worker)
+{
+    char* partial_data=NULL;
+    char* name=strtok_r(message," " ,&partial_data);
+    char path[UNIX_PATH_MAX];
+    sprintf(path, "%s/%s/%s", DATA, current_worker->name,name);
+    //off_t byte_readen=0;
+    off_t len=1;//dichiaro len a 1 perchè dopo vado a controllare byte_readen <len
+    int file = open(path, O_RDONLY);
+    //char *data=NULL;
+    if (file != -1)
+    {
+	struct stat info;
+	if(stat(path, &info) != 0)
+	    perror("stat in read_from_disk failed");
+	len = info.st_size;
+	//fprintf(stdout,"len file=%ld \n",len);
+	char data[len+1];
+	memset(data,0,len);
+	size_t byte_readen=readn(file,data,len+1);
+	    if(len!=byte_readen)
+		printf("ERRORE LUNGHEZZE\n");
+	    //fprintf(stdout,"byte letti=%ld \n",byte_readen);
+	    close(file);
+	    char header[BUFF_SIZE+1];
+	    //memset(header,0,BUFF_SIZE+1);
+	    sprintf(header,"DATA %ld \n ",len);
+	    char* message_full=(char*)malloc((strlen(header)+len+1)* sizeof(char));
+	    memcpy(message_full,header,strlen(header)* sizeof(char));
+	    memcpy(message_full+(strlen(header)* sizeof(char)),data,len* sizeof(char));
+	    message_full[strlen(header)+len]='\0';
+	    //fprintf(stdout, "IL MESSAGGIO COMPLETO :%s\n", message_full);
+	    //strcat(message_full,header);//non funzionanti
+	    //strcat(message_full,data);//non funzionanti
+	    size_t byte_writen=writen(current_worker->fd,message_full,strlen(header)+len);
+	    if(strlen(header)+len!=strlen(message_full))
+	    {
+	        fprintf(stdout,"ERRORE LUNGHEZZE2\n");
+	        fprintf(stdout,"CONTROLLA DATI\n:%s",message_full);
+	    }
+	    //fprintf(stdout,"\ndimensione byte scritti%ld\n",byte_writen);
+	    if(byte_writen<0)
+	    {
+		//free(data);
+		free(message);
+		perror("Failed write retrieve worker");
+		return byte_writen;
+	    }
+	    free(message_full);
+	    return byte_writen;
+    }
+    else
+    {
+	perror("Failed opening file");
+	return -1;
+    }
+}*/
 size_t handler_delete(char *message,worker* current_worker)
 {
     char* partial_data=NULL;
