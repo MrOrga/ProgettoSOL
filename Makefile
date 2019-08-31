@@ -1,6 +1,8 @@
 CC = gcc
 CFLAGS = -std=c99 -pedantic -Wall -g -Wmissing-field-initializers -D_POSIX_C_SOURCE=200809L -fsanitize=address -fno-omit-frame-pointer
 
+.PHONY : clean test testsum sig
+
 all: server utils libobjstore client
 
 server: server.c worker.c handlermessage.c utils.c signalhandler.c
@@ -30,6 +32,9 @@ clean:
 
 test:
 	@bash test.sh
+
+testsum:
+	@bash testsum.sh
 
 sig:
 	killall -10 server.o
