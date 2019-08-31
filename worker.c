@@ -40,30 +40,9 @@ void create_worker(int fd)
 }
 void remove_worker(worker * current_worker)
 {
-/*    pthread_mutex_lock(&mutex);
-    server->clients_connected--;
-
-    if(current_worker->next != NULL)
-    {
-	if(workers_list == current_worker)
-	{
-	    workers_list = current_worker->next;
-	}
-	else
-        	current_worker->next->prev = current_worker->prev;
-    }
-
-    if(current_worker->prev != NULL)
-    {
-	    current_worker->prev->next = current_worker->next;
-    }
-
-    pthread_mutex_unlock(&mutex);
-    free(current_worker);*/
     pthread_mutex_lock(&mutex);
 
     current_worker->is_logged=false;
-    //server->clients_connected--;
 
     if(current_worker->prev== NULL)
     {

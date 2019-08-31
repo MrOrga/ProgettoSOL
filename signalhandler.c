@@ -25,22 +25,18 @@ void * signal_loop()
 	sigwait(&set, &sig);
 	switch(sig) {
 	    case SIGINT:
-	        fprintf(stdout,"SIGINT RECEIVED\n");
-		server->is_running = false;
-		//close(server->fd);
-		break;
-	    case SIGTERM:
-		fprintf(stdout,"SIGTERM RECEIVED\n");
+	        fprintf(stdout,"\nSIGINT RECEIVED\n");
 		fprintf(stdout,"Server shutdown\n");
 		server->is_running = false;
-		//close(server->fd);
+		break;
+	    case SIGTERM:
+		fprintf(stdout,"\nSIGTERM RECEIVED\n");
+		fprintf(stdout,"Server shutdown\n");
+		server->is_running = false;
 		break;
 	    case SIGUSR1:
-		fprintf(stdout,"SIGUSR1 RECEIVED\n");
+		fprintf(stdout,"\nSIGUSR1 RECEIVED\n");
 		server_info();
-		//sigaddset(&set, SIGINT);
-		//sigaddset(&set, SIGTERM);
-		//sigaddset(&set, SIGUSR1);
 		break;
 	}
     }

@@ -30,3 +30,6 @@ clean:
 
 test:
 	@bash test.sh
+
+sig:
+	killall -10 server.o

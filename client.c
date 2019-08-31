@@ -56,6 +56,7 @@ void test1(char * name)
     {
         free(data[i]);
     }
+    fprintf(stdout,"-----TEST#1# OPERATION SUCCESS: #%d#,OPERATION FAILED:#%d#-----\n",op_success,op_failed);
 }
 void test2(char *name)
 {
@@ -71,19 +72,16 @@ void test2(char *name)
             if(strcmp(data[i],file)==0)
 
 	    {
-                //fprintf(stdout,"FILE %d RETRIEVED SUCCESS\n",i);
                 op_success++;
 	    }
             else
 	    {
-		//fprintf(stdout,"FILE %d RETRIEVED FAILED\n",i);
-                //fprintf(stdout,"DATI RICEVUTI:\n%s\n",file );
-		//fprintf(stdout,"DATI INIZIALI:\n%s\n",data[i] );
                 op_failed++;
 	    }
         }
         free(file);
     }
+    fprintf(stdout,"-----TEST#2# OPERATION SUCCESS: #%d#,OPERATION FAILED:#%d#-----\n",op_success,op_failed);
 }
 void test3(char * name)
 {
@@ -96,6 +94,7 @@ void test3(char * name)
         else
             op_failed++;
     }
+    fprintf(stdout,"-----TEST#3# OPERATION SUCCESS: #%d#,OPERATION FAILED:#%d#-----\n",op_success,op_failed);
 
 }
 int main(int argc,char * argv[])
@@ -114,12 +113,10 @@ int main(int argc,char * argv[])
             fprintf(stderr,"THE NAME IS TOO MUCH LONG,PLEASE CHECK AND TRY AGAIN");
             exit(EXIT_FAILURE);
         }
-        //
         int connect=os_connect(name);
         if(connect==0)
             exit(EXIT_FAILURE);
         int long op=strtol(argv[2],NULL,10);
-        //char op=*argv[2];
 	switch(op)
 	{
 	    case 1:
@@ -139,7 +136,6 @@ int main(int argc,char * argv[])
 		exit(EXIT_FAILURE);
 
 	}
-	fprintf(stdout,"-----OPERAZIONE EFFETTUATE CON SUCCESSO: %d,OPERAZIONE FALLITE:%d-----\n",op_success,op_failed);
         int disconnect=os_disconnect(name);
         if(disconnect!=0)
             exit(EXIT_FAILURE);

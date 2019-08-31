@@ -71,29 +71,5 @@ static inline int writen(long fd, void *buf, size_t size)
     }
     return 1;
 }
-/*static inline int read_to_new(long fd, void *buf, size_t size)
-{
-    size_t left = size;
-    int r;
-    int find=0;
-    char *bufptr = (char*)buf;
-    while(left>0&&find==0)
-    {
-	errno=0;
-	if ((r=read((int)fd ,bufptr,left)) == -1)
-	{
-	    if (errno == EINTR)
-	        continue;
-	    return -1;
-	}
-	if(strchr(bufptr,'\n')!=NULL)
-	    find=1;
-	if (r == 0)
-	    return 0;
-	left    -= r;
-	bufptr  += r;
-    }
-    return 1;
-}*/
 
 #endif //UTILS_H

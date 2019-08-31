@@ -1,8 +1,7 @@
-#define _XOPEN_SOURCE 700
 #include "server.h"
 int update_info(const char *path, const struct stat *info,const int flag)
 {
-    off_t bytes =  info->st_size;
+    long double bytes =  info->st_size;
     if (flag == FTW_F)
     {
 	server->n_obj++;
@@ -17,7 +16,6 @@ void server_info()
     server->size=0;
     server->n_obj=0;
 
-    //nftw(DATA, update_info, 20, FTW_PHYS);
     ftw(DATA,update_info,20);
 
     fprintf (stdout,"-----------------------Object store info------------------\n");
@@ -71,7 +69,7 @@ int main()
     while (server->is_running)
     {
         /*
-         * ricezione e creazione thread per client
+         * ricezione e creazione worker per client
          */
 	if(poll(&fds, 1, 10) >= 1)
 	{
